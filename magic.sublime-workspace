@@ -1,0 +1,485 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"add",
+				"addPackage\t  pub fn addPackage(self: *LibExeObjStep, package: Pkg) void"
+			],
+			[
+				"app",
+				"apple_pie"
+			],
+			[
+				"F",
+				"Fprint\t  func(w io.Writer, a ...interface{}) (n int, err error)"
+			],
+			[
+				"w",
+				"WriteHeader\t  func(statusCode int)"
+			],
+			[
+				"Wr",
+				"WriteHeader\t  func(statusCode int)"
+			],
+			[
+				"time",
+				"timestamp\t  time.Time"
+			],
+			[
+				"R",
+				"ResponseData{}\t  Variable"
+			],
+			[
+				"Res",
+				"ResponseData\t  struct{...}"
+			],
+			[
+				"Re",
+				"Response\t  struct{...}"
+			],
+			[
+				"All",
+				"AllowedMentionsType\t  string"
+			],
+			[
+				"Respon",
+				"ResponseType\t  int"
+			],
+			[
+				"stru",
+				"structs\t  structs"
+			],
+			[
+				"Sla",
+				"SlashCommandOption\t  struct{...}"
+			],
+			[
+				"Me",
+				"GuildMember\t  struct{...}"
+			],
+			[
+				"Inter",
+				"InteractionType\t  int"
+			],
+			[
+				"In",
+				"InteractionType\t  int"
+			],
+			[
+				"st",
+				"structs\t  \"structs\""
+			],
+			[
+				"De",
+				"DecodeString\t  func(s string) ([]byte, error)"
+			],
+			[
+				"Sp",
+				"Sprintf\t  func(format string, a ...interface{}) string"
+			],
+			[
+				"hea",
+				"headervalue\t  Variable"
+			],
+			[
+				"P",
+				"Printf\t  func(format string, a ...interface{}) (n int, err error)"
+			],
+			[
+				"Resp",
+				"ResponseWriter\t  interface{...}"
+			],
+			[
+				"handle",
+				"HandleFunc\t  func(pattern string, handler func(ResponseWriter, *Request))"
+			],
+			[
+				"Prin",
+				"Println\t  func(a ...interface{}) (n int, err error)"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "magic.sublime-project",
+			"settings":
+			{
+				"buffer_size": 45,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Golang Build/Go.sublime-build",
+					""
+				],
+				[
+					"Packages/Golang Build/Go.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Golang Build/Go.sublime-build",
+					"Test"
+				],
+				[
+					"Packages/Golang Build/Go.sublime-build",
+					"Install"
+				],
+				[
+					"Packages/Golang Build/Go.sublime-build",
+					"Cross-Compile (Interactive)"
+				],
+				[
+					"Packages/Golang Build/Go.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Golang Build/Go.sublime-build",
+				"Run"
+			]
+		],
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				],
+				[
+					"Packages/User/Golang.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/User/Golang.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					""
+				],
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					"Run File"
+				],
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					"Test File"
+				],
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					"Format File"
+				],
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					"Test Project"
+				],
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					"Build Project"
+				],
+				[
+					"Packages/Zig Language/Build Systems/Zig.sublime-build",
+					"Format Project"
+				],
+				[
+					"Packages/User/Golang.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/Zig Language/Build Systems/Zig.sublime-build",
+				"Run File"
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"enable",
+				"LSP: Enable Language Server in Project"
+			],
+			[
+				"lsp",
+				"LSP: Enable Language Server in Project"
+			],
+			[
+				"disb",
+				"LSP: Disable Language Server Globally"
+			],
+			[
+				"lsp:",
+				"LSP: Disable Language Server in Project"
+			],
+			[
+				"lsp:enab",
+				"LSP: Enable Language Server in Project"
+			],
+			[
+				"packa",
+				"Preferences: Browse Packages"
+			],
+			[
+				"color ",
+				"UI: Select Color Scheme"
+			],
+			[
+				"package control install",
+				"Package Control: Install Package"
+			],
+			[
+				"package",
+				"Install Package Control"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/A5rocks/Documents/magic",
+		"/C/Users/A5rocks/Documents/magic/src"
+	],
+	"file_history":
+	[
+		"/C/Users/A5rocks/Documents/magic/src/.gitmodules",
+		"/C/Users/A5rocks/Documents/magic/.gitmodules",
+		"/C/Users/A5rocks/Documents/murderer/structs/response.go",
+		"/C/Users/A5rocks/Documents/murderer/structs/request.go",
+		"/C/Users/A5rocks/Documents/murderer/structs/slash_command_data.go",
+		"/C/Users/A5rocks/Documents/murderer/structs/user.go",
+		"/C/Users/A5rocks/Documents/murderer/structs/guild_member.go",
+		"/C/Users/A5rocks/Documents/murderer/structs/interaction_type.go",
+		"/C/Users/A5rocks/Documents/murderer/server.go",
+		"/C/Users/A5rocks/Documents/murderer/go.mod",
+		"/C/Users/A5rocks/Documents/murderer/murderer.sublime-project",
+		"/C/Users/A5rocks/Documents/murderer/server/server.go",
+		"/C/Users/A5rocks/Documents/murderer/server/go.mod",
+		"/C/Users/A5rocks/Documents/murderer/structs.go",
+		"/C/Users/A5rocks/Documents/mystery/in_sight/hello.go",
+		"/C/Users/A5rocks/Documents/mystery/hello.go",
+		"/C/Users/A5rocks/AppData/Roaming/Sublime Text 3/Packages/User/Golang.sublime-build",
+		"/C/Program Files/VSCodium/resources/app/product.json",
+		"/C/Users/A5rocks/Downloads/atreus-stats-scrape/scraper.py",
+		"/C/Users/A5rocks/Downloads/atreus-stats-scrape/bot-submission.csv",
+		"/C/Users/A5rocks/Downloads/786282791545208894.json"
+	],
+	"find":
+	{
+		"height": 39.2
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "magic.sublime-project",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 45,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								43,
+								43
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 28.0
+	},
+	"input":
+	{
+		"height": 40.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 0.0
+	},
+	"output.diagnostics":
+	{
+		"height": 132.0
+	},
+	"output.exec":
+	{
+		"height": 132.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.golang_build":
+	{
+		"height": 132.0
+	},
+	"output.language servers":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "magic.sublime-project",
+	"replace":
+	{
+		"height": 52.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 218.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
