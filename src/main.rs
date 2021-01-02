@@ -4,6 +4,7 @@ use hyper::{Body, Request, Response, Server};
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Method, StatusCode};
 use futures::TryStreamExt as _;
+use ring::signature;
 
 async fn shutdown_signal() {
 	tokio::signal::ctrl_c()
@@ -11,7 +12,10 @@ async fn shutdown_signal() {
 		.expect("failed to do ctrl+c handling")
 }
 
+const DISCORD_PUBLIC_KEY_STRING: &str = "144a270b8f0562d7dc39a8f23e711620b2ba4aff5decc92fcbdcc18955c7f3ea";
+
 async fn hello_world(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+	let public_key = signature::UnparsedPublicKey::new(&signature::ED25519, hex::decode(DISCORD_PUBLIC_KEY_STRING).expect("invalid hex for public key"));
 	let mut resp = Response::new(Body::empty());
 
 	match (req.method(), req.uri().path()) {
@@ -19,7 +23,59 @@ async fn hello_world(req: Request<Body>) -> Result<Response<Body>, hyper::Error>
 			*resp.body_mut() = "Hello, world!".into();
 		},
 		(&Method::POST, "/") => {
-			*resp.body_mut() = req.into_body();
+			let timestamp = req.headers().get("x-signature-timestamp");
+
+			if timestamp == None {
+				*resp.body_mut() = "No timestamp!".into();
+				*resp.status_mut() = StatusCode::BAD_REQUEST;
+				return Ok(resp);
+			}
+
+			let timestamp_string = timestamp.unwrap().to_str();
+
+			if let Err(_e) = timestamp_string {
+				*resp.body_mut() = "Invalid timestamp.".into();
+				*resp.status_mut() = StatusCode::BAD_REQUEST;
+				return Ok(resp);
+			}
+
+			let signature = req.headers().get("x-signature-ed25519");
+
+			if signature == None {
+				*resp.body_mut() = "No signature!".into();
+				*resp.status_mut() = StatusCode::BAD_REQUEST;
+				return Ok(resp);
+			}
+
+			let signature_string = signature.unwrap().to_str();
+
+			if let Err(_e) = signature_string {
+				*resp.body_mut() = "Invalid signature.".into();
+				*resp.status_mut() = StatusCode::BAD_REQUEST;
+				return Ok(resp);
+			}
+
+			let signature_bytes = hex::decode(signature_string.unwrap());
+
+			if let Err(_e) = signature_bytes {
+				*resp.body_mut() = "Invalid hex for signature.".into();
+				*resp.status_mut() = StatusCode::BAD_REQUEST;
+				return Ok(resp);
+			}
+
+			let mut verified_body: Vec<u8> = timestamp_string.unwrap().into();
+			let body = hyper::body::to_bytes(req.into_body()).await?;
+			verified_body.append(&mut body.to_vec());
+
+			let verified = public_key.verify(&verified_body, &signature_bytes.unwrap());
+
+			if let Err(_e) = verified {
+				*resp.body_mut() = "Bad signature.".into();
+				*resp.status_mut() = StatusCode::UNAUTHORIZED;
+				return Ok(resp);
+			}
+
+			*resp.body_mut() = "Hi there!".into();
 		},
 		(&Method::POST, "/uppercase") => {
 			let stream = req
