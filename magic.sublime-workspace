@@ -4,6 +4,66 @@
 		"selected_items":
 		[
 			[
+				"v",
+				"verified"
+			],
+			[
+				"ve",
+				"verified_body"
+			],
+			[
+				"si",
+				"signature_bytes"
+			],
+			[
+				"signa",
+				"signature_bytes"
+			],
+			[
+				"time",
+				"timestamp_string"
+			],
+			[
+				"public",
+				"public_key"
+			],
+			[
+				"DIS",
+				"DISCORD_PUBLIC_KEY_STRING"
+			],
+			[
+				"dis",
+				"discord_public_key_string"
+			],
+			[
+				"sign",
+				"signature"
+			],
+			[
+				"st",
+				"status_mut"
+			],
+			[
+				"rev",
+				"reversed"
+			],
+			[
+				"body",
+				"body_mut"
+			],
+			[
+				"in",
+				"into_body"
+			],
+			[
+				"ser",
+				"service_fn"
+			],
+			[
+				"make",
+				"make_service_fn"
+			],
+			[
 				"add",
 				"addPackage\t  pub fn addPackage(self: *LibExeObjStep, package: Pkg) void"
 			],
@@ -22,10 +82,6 @@
 			[
 				"Wr",
 				"WriteHeader\t  func(statusCode int)"
-			],
-			[
-				"time",
-				"timestamp\t  time.Time"
 			],
 			[
 				"R",
@@ -68,10 +124,6 @@
 				"InteractionType\t  int"
 			],
 			[
-				"st",
-				"structs\t  \"structs\""
-			],
-			[
 				"De",
 				"DecodeString\t  func(s string) ([]byte, error)"
 			],
@@ -111,9 +163,18 @@
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
+		},
+		{
+			"file": "src/main.rs",
+			"settings":
+			{
+				"buffer_size": 3413,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
 		}
 	],
-	"build_system": "",
+	"build_system": "Packages/Rust Enhanced/RustEnhanced.sublime-build",
 	"build_system_choices":
 	[
 		[
@@ -171,6 +232,66 @@
 		[
 			[
 				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					""
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Automatic"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Run (with args)..."
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Check"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Test"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Test (with args)..."
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Bench"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Clean"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Document"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Clippy"
+				],
+				[
+					"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+					"Script"
+				],
+				[
+					"Packages/User/Golang.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/Rust Enhanced/RustEnhanced.sublime-build",
+				"Clippy"
+			]
+		],
+		[
+			[
+				[
 					"Packages/Zig Language/Build Systems/Zig.sublime-build",
 					""
 				],
@@ -209,7 +330,7 @@
 			]
 		]
 	],
-	"build_varint": "",
+	"build_varint": "Clippy",
 	"command_palette":
 	{
 		"height": 0.0,
@@ -286,6 +407,7 @@
 	],
 	"file_history":
 	[
+		"/C/Users/A5rocks/Documents/magic/Cargo.toml",
 		"/C/Users/A5rocks/Documents/magic/src/.gitmodules",
 		"/C/Users/A5rocks/Documents/magic/.gitmodules",
 		"/C/Users/A5rocks/Documents/murderer/structs/response.go",
@@ -341,7 +463,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -357,8 +479,8 @@
 						"selection":
 						[
 							[
-								43,
-								43
+								1,
+								1
 							]
 						],
 						"settings":
@@ -368,6 +490,34 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/main.rs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3413,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2416,
+								2416
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Rust Enhanced/RustEnhanced.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 403.2,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
