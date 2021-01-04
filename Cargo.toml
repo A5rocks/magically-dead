@@ -2,7 +2,13 @@
 name = "magic"
 version = "0.1.0"
 authors = ["A5rocks <git@helvetica.moe>"]
+description = "A social game made using Discord's slash commands."
+repository = "http://cyberspace:4567/helvetica/magic"
+license = "MPL-2.0"
+readme = "readme.md"
 edition = "2018"
+keywords = ["magic", "game", "mystery"]
+categories = ["games", ""]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

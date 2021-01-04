@@ -1,3 +1,8 @@
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
+#![allow(clippy::multiple_crate_versions)]
+
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 use hyper::{Method, StatusCode};
@@ -35,19 +40,13 @@ impl TryFrom<RawInteraction> for Interaction {
         if value.interaction_type == 1 {
             Err(MagicError::GenericError)
         } else {
-            Ok(Interaction {
+            Ok(Self {
                 id: value.id,
                 interaction_type: value.interaction_type,
                 data: value.data,
-                guild_id: value
-                    .guild_id
-                    .ok_or_else(|| return MagicError::GenericError)?,
-                channel_id: value
-                    .channel_id
-                    .ok_or_else(|| return MagicError::GenericError)?,
-                member: value
-                    .member
-                    .ok_or_else(|| return MagicError::GenericError)?,
+                guild_id: value.guild_id.ok_or(MagicError::GenericError)?,
+                channel_id: value.channel_id.ok_or(MagicError::GenericError)?,
+                member: value.member.ok_or(MagicError::GenericError)?,
                 token: value.token,
                 version: value.version,
             })
@@ -138,36 +137,36 @@ impl Error for MagicError {}
 impl fmt::Display for MagicError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            MagicError::WeirdHTTPError(location) => {
+            Self::WeirdHTTPError(location) => {
                 write!(f, "Some weird hyper error happened while {}.", location)
             }
-            MagicError::StringConversion => write!(
+            Self::StringConversion => write!(
                 f,
                 "An error occurred while converting your body to a string."
             ),
-            MagicError::JSONParsing(err) => write!(f, "{}", err),
-            MagicError::GenericError => write!(f, "An error occurred!"),
+            Self::JSONParsing(err) => write!(f, "{}", err),
+            Self::GenericError => write!(f, "An error occurred!"),
         }
     }
 }
 
 impl From<hyper::Error> for MagicError {
-    fn from(s: hyper::Error) -> MagicError {
+    fn from(s: hyper::Error) -> Self {
         println!("Hyper error says: {:?}", s);
-        MagicError::WeirdHTTPError("buffering body".to_string())
+        Self::WeirdHTTPError("buffering body".to_string())
     }
 }
 
 impl From<str::Utf8Error> for MagicError {
-    fn from(s: str::Utf8Error) -> MagicError {
+    fn from(s: str::Utf8Error) -> Self {
         println!("String error says: {:?}", s);
-        MagicError::StringConversion
+        Self::StringConversion
     }
 }
 
 impl From<serde_json::Error> for MagicError {
-    fn from(s: serde_json::Error) -> MagicError {
-        MagicError::JSONParsing(format!("JSON error: {}", s))
+    fn from(s: serde_json::Error) -> Self {
+        Self::JSONParsing(format!("JSON error: {}", s))
     }
 }
 
@@ -264,13 +263,13 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, MagicError
 
 async fn error_handler(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     match handle_request(req).await {
-        Ok(res) => Ok(res),
+        Ok(response) => Ok(response),
         Err(err) => {
-            let mut resp = Response::default();
-            *resp.status_mut() = StatusCode::BAD_REQUEST;
-            *resp.body_mut() = format!("{}", err).into();
+            let mut response = Response::default();
+            *response.status_mut() = StatusCode::BAD_REQUEST;
+            *response.body_mut() = format!("{}", err).into();
 
-            Ok(resp)
+            Ok(response)
         }
     }
 }
