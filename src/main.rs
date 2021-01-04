@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::{str, error::Error, fmt};
@@ -20,18 +21,129 @@ struct Point {
     y: i32
 }
 
-// #[derive(Serialize, Deserialize, Debug)]
-// struct Interaction {
-//     id: String,
-//     type: todo!("this"),
-//     data: 
-// }
+#[derive(Serialize, Deserialize, Debug)]
+struct RawInteraction {
+    id: String,
+    // todo: better type for this...?
+    #[serde(rename="type")]
+    interaction_type: u8,
+    data: Option<ApplicationCommandData>,
+    guild_id: Option<String>,
+    channel_id: Option<String>,
+    member: Option<GuildMember>,
+    token: String,
+    version: u8
+}
+
+impl TryFrom<RawInteraction> for Interaction {
+    type Error = MagicError;
+
+    fn try_from(value: RawInteraction) -> Result<Self, Self::Error> {
+        if value.interaction_type == 1 {
+            Err(MagicError::GenericError)
+        } else {
+            if let None = value.guild_id {
+                return Err(MagicError::GenericError);
+            }
+
+            if let None = value.channel_id {
+                return Err(MagicError::GenericError);
+            }
+
+            if let None = value.member {
+                return Err(MagicError::GenericError)
+            }
+
+            Ok(Interaction {
+                id: value.id,
+                interaction_type: value.interaction_type,
+                data: value.data,
+                guild_id: value.guild_id.ok_or_else(|| return MagicError::GenericError)?,
+                channel_id: value.channel_id.ok_or_else(|| return MagicError::GenericError)?,
+                member: value.member.ok_or_else(|| return MagicError::GenericError)?,
+                token: value.token,
+                version: value.version
+            })
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Interaction {
+    id: String,
+    // todo: better type for this...?
+    #[serde(rename="type")]
+    interaction_type: u8,
+    data: Option<ApplicationCommandData>,
+    guild_id: String,
+    channel_id: String,
+    member: GuildMember,
+    token: String,
+    version: u8
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ApplicationCommandData {
+    id: String,
+    name: String,
+    options: Option<Vec<ApplicationCommandDataOption>>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+enum ApplicationCommandDataValue {
+    String(String),
+    // it can be higher, but oh well.
+    Number(i128),
+    Boolean(bool)
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+enum ApplicationCommandDataOption {
+    Value {
+        name: String,
+        value: ApplicationCommandDataValue
+    },
+    Nested {
+        name: String,
+        options: Vec<ApplicationCommandDataOption>
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct GuildMember {
+    user: User,
+    nick: Option<String>,
+    roles: Vec<String>,
+    // this is unneeded, let's not include it
+    // joined_at: 
+    // neither is this
+    // premium_since:
+    deaf: bool,
+    mute: bool,
+    pending: Option<bool>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct User {
+    id: String,
+    username: String,
+    discriminator: String,
+    bot: Option<bool>,
+    avatar: Option<String>,
+    system: Option<bool>,
+    // todo: maybe I should do this?
+    public_flags: u64
+}
 
 #[derive(Debug)]
 enum MagicError {
     WeirdHTTPError(String),
     StringConversion,
-    JSONParsing(String)
+    JSONParsing(String),
+    // error for things idk about yet
+    GenericError
 }
 
 impl Error for MagicError {}
@@ -41,7 +153,8 @@ impl fmt::Display for MagicError {
         match self {
             MagicError::WeirdHTTPError(location) => write!(f, "Some weird hyper error happened while {}.", location),
             MagicError::StringConversion => write!(f, "An error occurred while converting your body to a string."),
-            MagicError::JSONParsing(err) => write!(f, "{}", err)
+            MagicError::JSONParsing(err) => write!(f, "{}", err),
+            MagicError::GenericError => write!(f, "An error occurred!")
         }
     }
 }
@@ -65,6 +178,7 @@ impl From<serde_json::Error> for MagicError {
         MagicError::JSONParsing(format!("JSON error: {}", s))
     }
 }
+
 
 const DISCORD_PUBLIC_KEY_STRING: &str = "144a270b8f0562d7dc39a8f23e711620b2ba4aff5decc92fcbdcc18955c7f3ea";
 
@@ -129,7 +243,21 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, MagicError
                 return Ok(resp);
             }
 
-            *resp.body_mut() = "Hi there!".into();
+            let full_body = body.to_vec();
+
+            let body_string: &str = str::from_utf8(&full_body)?;
+
+            let p: RawInteraction = serde_json::from_str(body_string)?;
+
+            if p.interaction_type == 1 {
+                // todo: not so dumb version
+                *resp.body_mut() = "{\"type\":1}".into();
+                return Ok(resp);
+            } else {
+                let interaction = Interaction::try_from(p)?;
+
+                println!("{:?}", interaction);
+            }
         },
         (&Method::POST, "/uppercase") => {
             let stream = req
@@ -151,15 +279,6 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, MagicError
                 .collect::<Vec<u8>>();
 
             *resp.body_mut() = reversed.into();
-        },
-        (&Method::POST, "/serde") => {
-            let full_body = hyper::body::to_bytes(req.into_body()).await?.to_vec();
-
-            let body_string: &str = str::from_utf8(&full_body)?;
-
-            let p: Point = serde_json::from_str(body_string)?;
-
-            println!("{:?}", p);
         },
         _ => {
             *resp.status_mut() = StatusCode::NOT_FOUND;

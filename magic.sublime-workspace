@@ -4,6 +4,38 @@
 		"selected_items":
 		[
 			[
+				"err",
+				"error_handler"
+			],
+			[
+				"Magic",
+				"MagicService"
+			],
+			[
+				"hand",
+				"handle_request"
+			],
+			[
+				"Strin",
+				"StringConversion"
+			],
+			[
+				"U",
+				"Utf8Error"
+			],
+			[
+				"M",
+				"MagicError"
+			],
+			[
+				"Str",
+				"StringConversion"
+			],
+			[
+				"body",
+				"body_string"
+			],
+			[
 				"v",
 				"verified"
 			],
@@ -46,10 +78,6 @@
 			[
 				"rev",
 				"reversed"
-			],
-			[
-				"body",
-				"body_mut"
 			],
 			[
 				"in",
@@ -156,19 +184,19 @@
 	"buffers":
 	[
 		{
-			"file": "magic.sublime-project",
+			"file": "src/main.rs",
 			"settings":
 			{
-				"buffer_size": 45,
+				"buffer_size": 6215,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/main.rs",
+			"file": "Cargo.toml",
 			"settings":
 			{
-				"buffer_size": 3413,
+				"buffer_size": 433,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -330,7 +358,7 @@
 			]
 		]
 	],
-	"build_varint": "Clippy",
+	"build_varint": "",
 	"command_palette":
 	{
 		"height": 0.0,
@@ -407,6 +435,7 @@
 	],
 	"file_history":
 	[
+		"/C/Users/A5rocks/Documents/magic/magic.sublime-project",
 		"/C/Users/A5rocks/Documents/magic/Cargo.toml",
 		"/C/Users/A5rocks/Documents/magic/src/.gitmodules",
 		"/C/Users/A5rocks/Documents/magic/.gitmodules",
@@ -463,64 +492,64 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "magic.sublime-project",
+					"file": "src/main.rs",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 45,
+						"buffer_size": 6215,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1,
-								1
+								650,
+								650
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/Rust Enhanced/RustEnhanced.sublime-syntax",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2952.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Cargo.toml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 433,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								380,
+								380
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/main.rs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3413,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2416,
-								2416
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Rust Enhanced/RustEnhanced.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 403.2,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
 					"type": "text"
 				}
 			]
