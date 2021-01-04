@@ -35,18 +35,6 @@ impl TryFrom<RawInteraction> for Interaction {
         if value.interaction_type == 1 {
             Err(MagicError::GenericError)
         } else {
-            if let None = value.guild_id {
-                return Err(MagicError::GenericError);
-            }
-
-            if let None = value.channel_id {
-                return Err(MagicError::GenericError);
-            }
-
-            if let None = value.member {
-                return Err(MagicError::GenericError);
-            }
-
             Ok(Interaction {
                 id: value.id,
                 interaction_type: value.interaction_type,
