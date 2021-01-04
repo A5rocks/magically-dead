@@ -1,12 +1,12 @@
-use std::convert::TryFrom;
-use std::convert::Infallible;
-use std::net::SocketAddr;
-use std::{str, error::Error, fmt};
-use hyper::{Body, Request, Response, Server};
 use hyper::service::{make_service_fn, service_fn};
+use hyper::{Body, Request, Response, Server};
 use hyper::{Method, StatusCode};
 use ring::signature;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::convert::Infallible;
+use std::convert::TryFrom;
+use std::net::SocketAddr;
+use std::{error::Error, fmt, str};
 
 async fn shutdown_signal() {
     tokio::signal::ctrl_c()
@@ -15,23 +15,17 @@ async fn shutdown_signal() {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Point {
-    x: i32,
-    y: i32
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 struct RawInteraction {
     id: String,
     // todo: better type for this...?
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     interaction_type: u8,
     data: Option<ApplicationCommandData>,
     guild_id: Option<String>,
     channel_id: Option<String>,
     member: Option<GuildMember>,
     token: String,
-    version: u8
+    version: u8,
 }
 
 impl TryFrom<RawInteraction> for Interaction {
@@ -50,18 +44,24 @@ impl TryFrom<RawInteraction> for Interaction {
             }
 
             if let None = value.member {
-                return Err(MagicError::GenericError)
+                return Err(MagicError::GenericError);
             }
 
             Ok(Interaction {
                 id: value.id,
                 interaction_type: value.interaction_type,
                 data: value.data,
-                guild_id: value.guild_id.ok_or_else(|| return MagicError::GenericError)?,
-                channel_id: value.channel_id.ok_or_else(|| return MagicError::GenericError)?,
-                member: value.member.ok_or_else(|| return MagicError::GenericError)?,
+                guild_id: value
+                    .guild_id
+                    .ok_or_else(|| return MagicError::GenericError)?,
+                channel_id: value
+                    .channel_id
+                    .ok_or_else(|| return MagicError::GenericError)?,
+                member: value
+                    .member
+                    .ok_or_else(|| return MagicError::GenericError)?,
                 token: value.token,
-                version: value.version
+                version: value.version,
             })
         }
     }
@@ -71,21 +71,21 @@ impl TryFrom<RawInteraction> for Interaction {
 struct Interaction {
     id: String,
     // todo: better type for this...?
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     interaction_type: u8,
     data: Option<ApplicationCommandData>,
     guild_id: String,
     channel_id: String,
     member: GuildMember,
     token: String,
-    version: u8
+    version: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ApplicationCommandData {
     id: String,
     name: String,
-    options: Option<Vec<ApplicationCommandDataOption>>
+    options: Option<Vec<ApplicationCommandDataOption>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -94,7 +94,7 @@ enum ApplicationCommandDataValue {
     String(String),
     // it can be higher, but oh well.
     Number(i128),
-    Boolean(bool)
+    Boolean(bool),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -102,12 +102,12 @@ enum ApplicationCommandDataValue {
 enum ApplicationCommandDataOption {
     Value {
         name: String,
-        value: ApplicationCommandDataValue
+        value: ApplicationCommandDataValue,
     },
     Nested {
         name: String,
-        options: Vec<ApplicationCommandDataOption>
-    }
+        options: Vec<ApplicationCommandDataOption>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -116,12 +116,12 @@ struct GuildMember {
     nick: Option<String>,
     roles: Vec<String>,
     // this is unneeded, let's not include it
-    // joined_at: 
+    // joined_at:
     // neither is this
     // premium_since:
     deaf: bool,
     mute: bool,
-    pending: Option<bool>
+    pending: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -133,7 +133,7 @@ struct User {
     avatar: Option<String>,
     system: Option<bool>,
     // todo: maybe I should do this?
-    public_flags: u64
+    public_flags: u64,
 }
 
 #[derive(Debug)]
@@ -142,7 +142,7 @@ enum MagicError {
     StringConversion,
     JSONParsing(String),
     // error for things idk about yet
-    GenericError
+    GenericError,
 }
 
 impl Error for MagicError {}
@@ -150,10 +150,15 @@ impl Error for MagicError {}
 impl fmt::Display for MagicError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            MagicError::WeirdHTTPError(location) => write!(f, "Some weird hyper error happened while {}.", location),
-            MagicError::StringConversion => write!(f, "An error occurred while converting your body to a string."),
+            MagicError::WeirdHTTPError(location) => {
+                write!(f, "Some weird hyper error happened while {}.", location)
+            }
+            MagicError::StringConversion => write!(
+                f,
+                "An error occurred while converting your body to a string."
+            ),
             MagicError::JSONParsing(err) => write!(f, "{}", err),
-            MagicError::GenericError => write!(f, "An error occurred!")
+            MagicError::GenericError => write!(f, "An error occurred!"),
         }
     }
 }
@@ -178,17 +183,20 @@ impl From<serde_json::Error> for MagicError {
     }
 }
 
-
-const DISCORD_PUBLIC_KEY_STRING: &str = "144a270b8f0562d7dc39a8f23e711620b2ba4aff5decc92fcbdcc18955c7f3ea";
+const DISCORD_PUBLIC_KEY_STRING: &str =
+    "144a270b8f0562d7dc39a8f23e711620b2ba4aff5decc92fcbdcc18955c7f3ea";
 
 async fn handle_request(req: Request<Body>) -> Result<Response<Body>, MagicError> {
-    let public_key = signature::UnparsedPublicKey::new(&signature::ED25519, hex::decode(DISCORD_PUBLIC_KEY_STRING).expect("invalid hex for public key"));
+    let public_key = signature::UnparsedPublicKey::new(
+        &signature::ED25519,
+        hex::decode(DISCORD_PUBLIC_KEY_STRING).expect("invalid hex for public key"),
+    );
     let mut resp = Response::new(Body::empty());
 
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") => {
             *resp.body_mut() = "Hello, world!".into();
-        },
+        }
         (&Method::POST, "/") => {
             let timestamp = req.headers().get("x-signature-timestamp");
 
@@ -257,7 +265,7 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, MagicError
 
                 println!("{:?}", interaction);
             }
-        },
+        }
         _ => {
             *resp.status_mut() = StatusCode::NOT_FOUND;
         }
@@ -283,9 +291,8 @@ async fn error_handler(req: Request<Body>) -> Result<Response<Body>, Infallible>
 async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
 
-    let make_svc = make_service_fn(|_conn| async {
-        Ok::<_, Infallible>(service_fn(error_handler))
-    });
+    let make_svc =
+        make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(error_handler)) });
 
     let server = Server::bind(&addr)
         .serve(make_svc)
