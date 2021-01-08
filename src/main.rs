@@ -244,9 +244,10 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, MagicError
             let p: RawInteraction = serde_json::from_str(body_string)?;
 
             if p.interaction_type == 1 {
-                // todo: not so dumb version
-                *resp.body_mut() = "{\"type\":1}".into();
-                return Ok(resp);
+                *resp.body_mut() = serde_json::json!({
+                    "type": 1
+                }).to_string().into();
+                return Ok(resp);    
             } else {
                 let interaction = Interaction::try_from(p)?;
 
