@@ -53,10 +53,30 @@ impl From<serde_json::Error> for MagicError {
 }
 
 pub async fn handle_interaction(
-    _interaction: request_types::Interaction,
+    interaction: request_types::Interaction,
 ) -> Result<response_types::InteractionResponse, MagicError> {
-    Ok(InteractionResponse::create(
-        3,
-        Data::content("<@302968847353249813>".to_string()),
-    ))
+    let data = interaction.data().ok_or(MagicError::GenericError)?;
+
+    match &data.id()[..] {
+        "796995810038382642" => Ok(InteractionResponse::create(
+            3,
+            Data::content("create lobby".to_string()),
+        )),
+        "796996870815744010" => Ok(InteractionResponse::create(
+            3,
+            Data::content("join lobby".to_string()),
+        )),
+        "796999207046742027" => Ok(InteractionResponse::create(
+            3,
+            Data::content("kill player".to_string()),
+        )),
+        "796999927782834176" => Ok(InteractionResponse::create(
+            3,
+            Data::content("vote player".to_string()),
+        )),
+        _ => Ok(InteractionResponse::create(
+            4,
+            Data::content("Command not set up.".to_string()),
+        )),
+    }
 }

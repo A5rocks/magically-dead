@@ -51,11 +51,25 @@ pub struct Interaction {
     version: u8,
 }
 
+impl Interaction {
+    // i cba to make this a reference like it should be...
+    // todo: ^
+    pub fn data(self) -> Option<ApplicationCommandData> {
+        self.data
+    }
+}
+
 #[derive(Deserialize, Debug)]
-struct ApplicationCommandData {
+pub struct ApplicationCommandData {
     id: String,
     name: String,
     options: Option<Vec<ApplicationCommandDataOption>>,
+}
+
+impl ApplicationCommandData {
+    pub fn id(self) -> String {
+        self.id
+    }
 }
 
 #[derive(Deserialize, Debug)]
