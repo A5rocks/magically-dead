@@ -87,7 +87,7 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, magic::Mag
 
             let body_string: &str = std::str::from_utf8(&full_body)?;
 
-            let p: magic::RawInteraction = serde_json::from_str(body_string)?;
+            let p: magic::request_types::RawInteraction = serde_json::from_str(body_string)?;
 
             if p.interaction_type == 1 {
                 *resp.body_mut() = serde_json::json!({
@@ -97,7 +97,7 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, magic::Mag
                 .into();
                 return Ok(resp);
             } else {
-                let interaction = magic::Interaction::try_from(p)?;
+                let interaction = magic::request_types::Interaction::try_from(p)?;
 
                 magic::handle_interaction(interaction).await;
             }
