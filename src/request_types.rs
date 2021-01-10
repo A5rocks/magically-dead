@@ -1,8 +1,8 @@
 use std::convert::TryFrom;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct RawInteraction {
     id: String,
     // todo: better type for this...?
@@ -51,14 +51,14 @@ pub struct Interaction {
     version: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct ApplicationCommandData {
     id: String,
     name: String,
     options: Option<Vec<ApplicationCommandDataOption>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 #[serde(untagged)]
 enum ApplicationCommandDataValue {
     String(String),
@@ -67,7 +67,7 @@ enum ApplicationCommandDataValue {
     Boolean(bool),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 #[serde(untagged)]
 enum ApplicationCommandDataOption {
     Value {
@@ -80,7 +80,7 @@ enum ApplicationCommandDataOption {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct GuildMember {
     user: User,
     nick: Option<String>,
@@ -94,7 +94,7 @@ struct GuildMember {
     pending: Option<bool>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct User {
     id: String,
     username: String,

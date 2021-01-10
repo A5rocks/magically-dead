@@ -1,6 +1,9 @@
 pub mod request_types;
+pub mod response_types;
 
 use std::{error::Error, fmt};
+
+use response_types::{Data, InteractionResponse};
 
 #[derive(Debug)]
 pub enum MagicError {
@@ -49,6 +52,11 @@ impl From<serde_json::Error> for MagicError {
     }
 }
 
-pub async fn handle_interaction(interaction: request_types::Interaction) {
-    println!("{:?}", interaction);
+pub async fn handle_interaction(
+    _interaction: request_types::Interaction,
+) -> Result<response_types::InteractionResponse, MagicError> {
+    Ok(InteractionResponse::create(
+        3,
+        Data::content("<@302968847353249813>".to_string()),
+    ))
 }

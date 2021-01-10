@@ -7,7 +7,7 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 use hyper::{Method, StatusCode};
 use ring::signature;
-use std::convert::{Infallible, TryFrom};
+use std::convert::{Infallible, TryFrom, TryInto};
 use std::net::SocketAddr;
 
 async fn shutdown_signal() {
@@ -99,7 +99,9 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, magic::Mag
             } else {
                 let interaction = magic::request_types::Interaction::try_from(p)?;
 
-                magic::handle_interaction(interaction).await;
+                return Ok(Response::new(
+                    magic::handle_interaction(interaction).await?.try_into()?,
+                ));
             }
         }
         _ => {
