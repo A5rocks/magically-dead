@@ -34,14 +34,14 @@ impl fmt::Display for MagicError {
 
 impl From<hyper::Error> for MagicError {
     fn from(s: hyper::Error) -> Self {
-        println!("Hyper error says: {:?}", s);
+        eprintln!("Hyper error says: {:?}", s);
         Self::WeirdHTTPError("buffering body".to_string())
     }
 }
 
 impl From<std::str::Utf8Error> for MagicError {
     fn from(s: std::str::Utf8Error) -> Self {
-        println!("String error says: {:?}", s);
+        eprintln!("String error says: {:?}", s);
         Self::StringConversion
     }
 }
