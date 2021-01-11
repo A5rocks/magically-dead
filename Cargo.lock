@@ -634,7 +634,6 @@ dependencies = [
  "futures",
  "hex",
  "hyper",
- "lazy_static",
  "ring",
  "serde",
  "serde_json",

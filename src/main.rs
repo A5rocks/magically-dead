@@ -1,7 +1,7 @@
 #![warn(clippy::pedantic)]
 #![warn(clippy::nursery)]
-// #![warn(clippy::cargo)]
-// #![allow(clippy::multiple_crate_versions)]
+#![warn(clippy::cargo)]
+#![allow(clippy::multiple_crate_versions)]
 
 #[macro_use]
 extern crate dotenv_codegen;
@@ -21,8 +21,7 @@ async fn shutdown_signal() {
         .expect("failed to do ctrl+c handling")
 }
 
-const DISCORD_PUBLIC_KEY_STRING: &str =
-    "144a270b8f0562d7dc39a8f23e711620b2ba4aff5decc92fcbdcc18955c7f3ea";
+const DISCORD_PUBLIC_KEY_STRING: &str = dotenv!("PUBLIC_KEY");
 
 async fn handle_request(
     req: Request<Body>,

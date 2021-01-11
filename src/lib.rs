@@ -67,14 +67,14 @@ pub async fn handle_interaction(
     interaction: request_types::Interaction,
     pool: PgPool,
 ) -> Result<response_types::InteractionResponse, MagicError> {
-    let data = interaction.data().ok_or(MagicError::GenericError)?;
-
     sqlx::query("INSERT INTO DOES_IT_WORK VALUES ($1)")
-        .bind(data.clone().id().parse::<i64>().unwrap_or(5))
+        .bind(interaction.id().parse::<i64>().unwrap_or(5))
         .execute(&pool)
         .compat()
         .await
         .expect("whoops");
+
+    let data = interaction.data().ok_or(MagicError::GenericError)?;
 
     match &data.id()[..] {
         "796995810038382642" => Ok(InteractionResponse::create(

@@ -57,6 +57,10 @@ impl Interaction {
     pub fn data(self) -> Option<ApplicationCommandData> {
         self.data
     }
+
+    pub fn id(&self) -> &String {
+        &self.id
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
