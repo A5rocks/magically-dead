@@ -1,0 +1,13 @@
+version: '3'
+services:
+  magic:
+    build: .
+    depends_on:
+      - postgresql
+    ports:
+      - 8000:8000
+  postgresql:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres

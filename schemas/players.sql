@@ -1,4 +1,4 @@
-CREATE TABLE public.players
+CREATE TABLE players
 (
     user_id bigint NOT NULL,
     channel_id bigint NOT NULL,

@@ -1,14 +1,19 @@
 #![warn(clippy::pedantic)]
 #![warn(clippy::nursery)]
-#![warn(clippy::cargo)]
-#![allow(clippy::multiple_crate_versions)]
+// #![warn(clippy::cargo)]
+// #![allow(clippy::multiple_crate_versions)]
+
+#[macro_use]
+extern crate dotenv_codegen;
 
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 use hyper::{Method, StatusCode};
 use ring::signature;
+use sqlx::PgPool;
 use std::convert::{Infallible, TryFrom, TryInto};
 use std::net::SocketAddr;
+use tokio_compat_02::FutureExt;
 
 async fn shutdown_signal() {
     tokio::signal::ctrl_c()
@@ -19,7 +24,10 @@ async fn shutdown_signal() {
 const DISCORD_PUBLIC_KEY_STRING: &str =
     "144a270b8f0562d7dc39a8f23e711620b2ba4aff5decc92fcbdcc18955c7f3ea";
 
-async fn handle_request(req: Request<Body>) -> Result<Response<Body>, magic::MagicError> {
+async fn handle_request(
+    req: Request<Body>,
+    pool: PgPool,
+) -> Result<Response<Body>, magic::MagicError> {
     let public_key = signature::UnparsedPublicKey::new(
         &signature::ED25519,
         hex::decode(DISCORD_PUBLIC_KEY_STRING).expect("invalid hex for public key"),
@@ -100,7 +108,9 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, magic::Mag
                 let interaction = magic::request_types::Interaction::try_from(p)?;
 
                 return Ok(Response::new(
-                    magic::handle_interaction(interaction).await?.try_into()?,
+                    magic::handle_interaction(interaction, pool)
+                        .await?
+                        .try_into()?,
                 ));
             }
         }
@@ -112,8 +122,8 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, magic::Mag
     Ok(resp)
 }
 
-async fn error_handler(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    match handle_request(req).await {
+async fn error_handler(req: Request<Body>, pool: PgPool) -> Result<Response<Body>, Infallible> {
+    match handle_request(req, pool).await {
         Ok(response) => Ok(response),
         Err(err) => {
             let mut response = Response::default();
@@ -127,10 +137,17 @@ async fn error_handler(req: Request<Body>) -> Result<Response<Body>, Infallible>
 
 #[tokio::main]
 async fn main() {
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+    let pool = PgPool::connect(dotenv!("DATABASE_URL"))
+        .compat()
+        .await
+        .expect("could not connect to DB");
 
-    let make_svc =
-        make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(error_handler)) });
+    let make_svc = make_service_fn(move |_| {
+        let state = pool.clone();
+        async { Ok::<_, Infallible>(service_fn(move |req| error_handler(req, state.clone()))) }
+    });
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
 
     let server = Server::bind(&addr)
         .serve(make_svc)

@@ -1,7 +1,9 @@
 pub mod request_types;
 pub mod response_types;
 
+use sqlx::PgPool;
 use std::{error::Error, fmt};
+use tokio_compat_02::FutureExt;
 
 use response_types::{Data, InteractionResponse};
 
@@ -10,6 +12,7 @@ pub enum MagicError {
     WeirdHTTPError(String),
     StringConversion,
     JSONParsing(String),
+    SQLError,
     // error for things idk about yet
     GenericError,
 }
@@ -28,6 +31,7 @@ impl fmt::Display for MagicError {
             ),
             Self::JSONParsing(err) => write!(f, "{}", err),
             Self::GenericError => write!(f, "An error occurred!"),
+            Self::SQLError => write!(f, "An error occurred in SQL!"),
         }
     }
 }
@@ -52,10 +56,25 @@ impl From<serde_json::Error> for MagicError {
     }
 }
 
+impl From<sqlx::Error> for MagicError {
+    fn from(s: sqlx::Error) -> Self {
+        eprintln!("SQL error says: {:?}", s);
+        Self::SQLError
+    }
+}
+
 pub async fn handle_interaction(
     interaction: request_types::Interaction,
+    pool: PgPool,
 ) -> Result<response_types::InteractionResponse, MagicError> {
     let data = interaction.data().ok_or(MagicError::GenericError)?;
+
+    sqlx::query("INSERT INTO DOES_IT_WORK VALUES ($1)")
+        .bind(data.clone().id().parse::<i64>().unwrap_or(5))
+        .execute(&pool)
+        .compat()
+        .await
+        .expect("whoops");
 
     match &data.id()[..] {
         "796995810038382642" => Ok(InteractionResponse::create(

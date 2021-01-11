@@ -37,7 +37,7 @@ impl TryFrom<RawInteraction> for Interaction {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Interaction {
     id: String,
     // todo: better type for this...?
@@ -59,7 +59,7 @@ impl Interaction {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ApplicationCommandData {
     id: String,
     name: String,
@@ -72,7 +72,7 @@ impl ApplicationCommandData {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 enum ApplicationCommandDataValue {
     String(String),
@@ -81,7 +81,7 @@ enum ApplicationCommandDataValue {
     Boolean(bool),
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 enum ApplicationCommandDataOption {
     Value {
@@ -94,7 +94,7 @@ enum ApplicationCommandDataOption {
     },
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 struct GuildMember {
     user: User,
     nick: Option<String>,
@@ -108,7 +108,7 @@ struct GuildMember {
     pending: Option<bool>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 struct User {
     id: String,
     username: String,

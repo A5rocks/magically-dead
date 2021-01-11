@@ -10,6 +10,10 @@ edition = "2018"
 keywords = ["magic", "game", "mystery"]
 categories = ["games", ""]
 
+[[bin]]
+name = "magic"
+path = "src/main.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -21,3 +25,6 @@ serde_json = "1.0.61"
 ring = "0.16.19"
 hex = "0.4.2"
 sqlx = { version = "0.4.2", features = [ "runtime-tokio-rustls", "postgres" ] }
+dotenv_codegen = "0.15.0"
+tokio-compat-02 = "0.2"
+lazy_static = "1.4.0"
