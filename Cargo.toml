@@ -24,6 +24,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.61"
 ring = "0.16.19"
 hex = "0.4.2"
-sqlx = { version = "0.4.2", features = [ "runtime-tokio-rustls", "postgres" ] }
 dotenv_codegen = "0.15.0"
-tokio-compat-02 = "0.2"
+sled = "0.34.6"
+sled-extensions = {version="0.2.0", features= ["bincode"]}

@@ -10,10 +10,10 @@ use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 use hyper::{Method, StatusCode};
 use ring::signature;
-use sqlx::PgPool;
 use std::convert::{Infallible, TryFrom, TryInto};
 use std::net::SocketAddr;
-use tokio_compat_02::FutureExt;
+
+use magic::Database;
 
 async fn shutdown_signal() {
     tokio::signal::ctrl_c()
@@ -25,7 +25,7 @@ const DISCORD_PUBLIC_KEY_STRING: &str = dotenv!("PUBLIC_KEY");
 
 async fn handle_request(
     req: Request<Body>,
-    pool: PgPool,
+    db: Database,
 ) -> Result<Response<Body>, magic::MagicError> {
     let public_key = signature::UnparsedPublicKey::new(
         &signature::ED25519,
@@ -107,7 +107,7 @@ async fn handle_request(
                 let interaction = magic::request_types::Interaction::try_from(p)?;
 
                 return Ok(Response::new(
-                    magic::handle_interaction(interaction, pool)
+                    magic::handle_interaction(interaction, db)
                         .await?
                         .try_into()?,
                 ));
@@ -121,8 +121,8 @@ async fn handle_request(
     Ok(resp)
 }
 
-async fn error_handler(req: Request<Body>, pool: PgPool) -> Result<Response<Body>, Infallible> {
-    match handle_request(req, pool).await {
+async fn error_handler(req: Request<Body>, db: Database) -> Result<Response<Body>, Infallible> {
+    match handle_request(req, db).await {
         Ok(response) => Ok(response),
         Err(err) => {
             let mut response = Response::default();
@@ -136,13 +136,15 @@ async fn error_handler(req: Request<Body>, pool: PgPool) -> Result<Response<Body
 
 #[tokio::main]
 async fn main() {
-    let pool = PgPool::connect(dotenv!("DATABASE_URL"))
-        .compat()
-        .await
-        .expect("could not connect to DB");
+    // let tobogan = sled::open("sled.data").expect("Could not open sled's file.");
+    let tobogan = sled_extensions::Config::default()
+        .path("sled.data")
+        .open()
+        .expect("Could not open sled's file");
+    let db = Database::make(tobogan);
 
     let make_svc = make_service_fn(move |_| {
-        let state = pool.clone();
+        let state = db.clone();
         async { Ok::<_, Infallible>(service_fn(move |req| error_handler(req, state.clone()))) }
     });
 

@@ -1,20 +1,43 @@
 pub mod request_types;
 pub mod response_types;
 
-use sqlx::PgPool;
-use std::{error::Error, fmt};
-use tokio_compat_02::FutureExt;
-
 use response_types::{Data, InteractionResponse};
+use serde::{Deserialize, Serialize};
+use sled_extensions::bincode::Tree;
+use sled_extensions::DbExt;
+use std::{error::Error, fmt};
 
 #[derive(Debug)]
 pub enum MagicError {
     WeirdHTTPError(String),
     StringConversion,
     JSONParsing(String),
-    SQLError,
     // error for things idk about yet
     GenericError,
+    SledError,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Lobby {
+    creator: String,
+    players: Vec<String>,
+}
+
+#[derive(Clone)]
+pub struct Database {
+    // TODO: this
+    lobbies: std::sync::Arc<Tree<Lobby>>,
+}
+
+impl Database {
+    pub fn make(db: sled_extensions::Db) -> Self {
+        Self {
+            lobbies: std::sync::Arc::from(
+                db.open_bincode_tree("lobbies")
+                    .expect("was not able to open lobby tree"),
+            ),
+        }
+    }
 }
 
 impl Error for MagicError {}
@@ -31,7 +54,7 @@ impl fmt::Display for MagicError {
             ),
             Self::JSONParsing(err) => write!(f, "{}", err),
             Self::GenericError => write!(f, "An error occurred!"),
-            Self::SQLError => write!(f, "An error occurred in SQL!"),
+            Self::SledError => write!(f, "A filesystem error happened with sled!"),
         }
     }
 }
@@ -56,31 +79,50 @@ impl From<serde_json::Error> for MagicError {
     }
 }
 
-impl From<sqlx::Error> for MagicError {
-    fn from(s: sqlx::Error) -> Self {
-        eprintln!("SQL error says: {:?}", s);
-        Self::SQLError
+impl From<sled_extensions::Error> for MagicError {
+    fn from(s: sled_extensions::Error) -> Self {
+        eprintln!("sled error says: {:?}", s);
+        Self::SledError
     }
+}
+
+pub async fn create_lobby(
+    interaction: request_types::Interaction,
+    db: Database,
+) -> Result<response_types::InteractionResponse, MagicError> {
+    db.lobbies
+        .as_ref()
+        .transaction(|db| {
+            let prior_lobby = db.get(interaction.clone().channel_id())?;
+            println!("Prior lobby: {:?}", prior_lobby);
+
+            db.insert(
+                interaction.clone().channel_id().as_str(),
+                Lobby {
+                    creator: interaction.clone().member().user().id(),
+                    players: vec![interaction.clone().member().user().id()],
+                },
+            )?
+            .expect("todo!");
+
+            Ok(Ok(()))
+        })
+        .expect("tx error")?;
+
+    Ok(InteractionResponse::create(
+        3,
+        Data::content("create lobby".to_string()),
+    ))
 }
 
 pub async fn handle_interaction(
     interaction: request_types::Interaction,
-    pool: PgPool,
+    db: Database,
 ) -> Result<response_types::InteractionResponse, MagicError> {
-    sqlx::query("INSERT INTO DOES_IT_WORK VALUES ($1)")
-        .bind(interaction.id().parse::<i64>().unwrap_or(5))
-        .execute(&pool)
-        .compat()
-        .await
-        .expect("whoops");
+    let data = interaction.clone().data().ok_or(MagicError::GenericError)?;
 
-    let data = interaction.data().ok_or(MagicError::GenericError)?;
-
-    match &data.id()[..] {
-        "796995810038382642" => Ok(InteractionResponse::create(
-            3,
-            Data::content("create lobby".to_string()),
-        )),
+    match data.id().as_str() {
+        "796995810038382642" => Ok(create_lobby(interaction, db).await?),
         "796996870815744010" => Ok(InteractionResponse::create(
             3,
             Data::content("join lobby".to_string()),

@@ -61,6 +61,18 @@ impl Interaction {
     pub fn id(&self) -> &String {
         &self.id
     }
+
+    pub fn guild_id(self) -> String {
+        self.guild_id
+    }
+
+    pub fn channel_id(self) -> String {
+        self.channel_id
+    }
+
+    pub fn member(self) -> GuildMember {
+        self.member
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -99,7 +111,7 @@ enum ApplicationCommandDataOption {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-struct GuildMember {
+pub struct GuildMember {
     user: User,
     nick: Option<String>,
     roles: Vec<String>,
@@ -112,8 +124,14 @@ struct GuildMember {
     pending: Option<bool>,
 }
 
+impl GuildMember {
+    pub fn user(self) -> User {
+        self.user
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
-struct User {
+pub struct User {
     id: String,
     username: String,
     discriminator: String,
@@ -122,4 +140,10 @@ struct User {
     system: Option<bool>,
     // todo: maybe I should do this?
     public_flags: u64,
+}
+
+impl User {
+    pub fn id(self) -> String {
+        self.id
+    }
 }
