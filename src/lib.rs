@@ -96,14 +96,13 @@ impl From<sled::Error> for MagicError {
     }
 }
 
-pub async fn create_lobby(
+fn create_lobby(
     interaction: request_types::Interaction,
     db: Database,
 ) -> Result<response_types::InteractionResponse, MagicError> {
     let player_id = interaction.clone().member().user().id();
     let result = (&db.lobbies, &db.players)
         .transaction(|(lobbies, players)| {
-            let ok = ConflictableTransactionResult::<sled::Result<&'static str>, Infallible>::Ok;
             let player = players.get(&player_id)?;
             let lobby_id_val = interaction.clone().channel_id();
             let lobby_id = lobby_id_val.as_str();
@@ -117,14 +116,14 @@ pub async fn create_lobby(
                 // we do some extra work for error messages.
                 return if let Some(id) = player {
                     if id == lobby_id {
-                        ok(Ok(
+                        Ok(Ok(
                             "you're already in that lobby! (`hijack` will be implemented soon:tm:)",
                         ))
                     } else {
-                        ok(Ok("you're in another lobby!"))
+                        Ok(Ok("you're in another lobby!"))
                     }
                 } else {
-                    ok(Ok("a lobby already exists in this channel! try /join!"))
+                    Ok(Ok("a lobby already exists in this channel! try /join!"))
                 };
             };
 
@@ -132,7 +131,7 @@ pub async fn create_lobby(
                 // the player is in a lobby
                 // so... are they the owner of their old lobby?
                 // TODO: delete / leave old lobby
-                return ok(Ok("tell a5 to do this."));
+                return Ok(Ok("tell a5 to do this."));
             }
 
             lobbies.insert(
@@ -156,6 +155,34 @@ pub async fn create_lobby(
     ))
 }
 
+fn join_lobby(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+    Ok(InteractionResponse::create(
+        3,
+        Data::content("join lobby".to_string()),
+    ))
+}
+
+fn kill_player(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+    Ok(InteractionResponse::create(
+        3,
+        Data::content("kill player".to_string()),
+    ))
+}
+
+fn vote_player(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+    Ok(InteractionResponse::create(
+        3,
+        Data::content("vote player".to_string()),
+    ))
+}
+
+fn leave_lobby(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+    Ok(InteractionResponse::create(
+        3,
+        Data::content("leave lobby".to_string()),
+    ))
+}
+
 pub async fn handle_interaction(
     interaction: request_types::Interaction,
     db: Database,
@@ -163,23 +190,11 @@ pub async fn handle_interaction(
     let data = interaction.clone().data().ok_or(MagicError::GenericError)?;
 
     match data.id().as_str() {
-        "796995810038382642" => Ok(create_lobby(interaction, db).await?),
-        "796996870815744010" => Ok(InteractionResponse::create(
-            3,
-            Data::content("join lobby".to_string()),
-        )),
-        "796999207046742027" => Ok(InteractionResponse::create(
-            3,
-            Data::content("kill player".to_string()),
-        )),
-        "796999927782834176" => Ok(InteractionResponse::create(
-            3,
-            Data::content("vote player".to_string()),
-        )),
-        "801198519263559690" => Ok(InteractionResponse::create(
-            3,
-            Data::content("leave lobby".to_string()),
-        )),
+        "796995810038382642" => create_lobby(interaction, db),
+        "796996870815744010" => join_lobby(interaction, db),
+        "796999207046742027" => kill_player(interaction, db),
+        "796999927782834176" => vote_player(interaction, db),
+        "801198519263559690" => leave_lobby(interaction, db),
         _ => Ok(InteractionResponse::create(
             4,
             Data::content("Command not set up.".to_string()),
