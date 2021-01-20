@@ -100,6 +100,68 @@ fn create_lobby(
     interaction: request_types::Interaction,
     db: Database,
 ) -> Result<response_types::InteractionResponse, MagicError> {
+    let mut options: Vec<request_types::ApplicationCommandDataOption> = interaction
+        .clone()
+        .data()
+        .expect("create lobby missing `data`")
+        .options()
+        .unwrap_or_default();
+
+    options.retain(|option| {
+        match option {
+            request_types::ApplicationCommandDataOption::Value { name, value } => {
+                if let request_types::ApplicationCommandDataValue::Boolean(_) = value {
+                    name == "hijack"
+                } else {
+                    false
+                }
+            }
+            request_types::ApplicationCommandDataOption::Nested { .. } => false, // TODO: maybe recurse? (flatmap)
+        }
+    });
+
+    let options: Vec<_> = options
+        .iter()
+        .map(|option| {
+            if let request_types::ApplicationCommandDataOption::Value { value, .. } = option {
+                if let request_types::ApplicationCommandDataValue::Boolean(bool) = value {
+                    // get rid of that nasty reference (turns into a double reference with `Vec.get`)
+                    *bool
+                } else {
+                    panic!("impossible state.")
+                }
+            } else {
+                panic!("impossible state.")
+            }
+        })
+        .collect();
+
+    let hijacking = options
+        .get(0)
+        .map(|thing| thing.to_owned())
+        .unwrap_or(false);
+
+    // hijacking requires MANAGE_MESSAGES
+    if hijacking
+        && interaction
+            .clone()
+            .member()
+            .permissions()
+            .parse::<u128>()
+            .expect("bad permissions int")
+            >> 13
+            & 1
+            == 0
+    {
+        return Ok(InteractionResponse::create(
+            3,
+            Data::content(format!(
+                "create lobby: {}",
+                "you don't have permissions required to hijack"
+            )),
+        ));
+    };
+
     let player_id = interaction.clone().member().user().id();
     let result = (&db.lobbies, &db.players)
         .transaction(|(lobbies, players)| {
@@ -110,15 +172,15 @@ fn create_lobby(
                 .get(lobby_id)?
                 .map(|thing| decode_lobby(thing.as_ref()));
 
+            dbg!(&cur_lobby);
+
             // if there's a lobby already...
             // TODO: make this do some extra work for UX (leaving, etc.)
-            if let Some(_lobby) = cur_lobby {
+            if player.is_some() && !hijacking {
                 // we do some extra work for error messages.
                 return if let Some(id) = player {
                     if id == lobby_id {
-                        Ok(Ok(
-                            "you're already in that lobby! (`hijack` will be implemented soon:tm:)",
-                        ))
+                        Ok(Ok("you're already in that lobby!"))
                     } else {
                         Ok(Ok("you're in another lobby!"))
                     }
@@ -127,20 +189,40 @@ fn create_lobby(
                 };
             };
 
-            if let Some(_player_lobby_id) = player {
+            let hijacking = if cur_lobby.is_none() {
+                // it doesn't matter, let's simplify logic
+                false
+            } else {
+                hijacking
+            };
+
+            if player.is_some() {
                 // the player is in a lobby
                 // so... are they the owner of their old lobby?
                 // TODO: delete / leave old lobby
                 return Ok(Ok("tell a5 to do this."));
             }
 
-            lobbies.insert(
-                lobby_id,
-                encode_lobby(&Lobby {
-                    creator: player_id.clone(),
-                    players: vec![player_id.clone()],
-                }),
-            )?;
+            if !hijacking {
+                lobbies.insert(
+                    lobby_id,
+                    encode_lobby(&Lobby {
+                        creator: player_id.clone(),
+                        players: vec![player_id.clone()],
+                    }),
+                )?;
+            } else {
+                let mut prev_players = cur_lobby.map(|thing| thing.players).unwrap_or_default();
+                prev_players.push(player_id.clone());
+
+                lobbies.insert(
+                    lobby_id,
+                    encode_lobby(&Lobby {
+                        creator: player_id.clone(),
+                        players: prev_players,
+                    }),
+                )?;
+            }
             players.insert(player_id.as_str(), lobby_id)?;
 
             ConflictableTransactionResult::<sled::Result<&'static str>, Infallible>::Ok(Ok(
@@ -155,28 +237,40 @@ fn create_lobby(
     ))
 }
 
-fn join_lobby(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+fn join_lobby(
+    _interaction: request_types::Interaction,
+    _db: Database,
+) -> Result<response_types::InteractionResponse, MagicError> {
     Ok(InteractionResponse::create(
         3,
         Data::content("join lobby".to_string()),
     ))
 }
 
-fn kill_player(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+fn kill_player(
+    _interaction: request_types::Interaction,
+    _db: Database,
+) -> Result<response_types::InteractionResponse, MagicError> {
     Ok(InteractionResponse::create(
         3,
         Data::content("kill player".to_string()),
     ))
 }
 
-fn vote_player(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+fn vote_player(
+    _interaction: request_types::Interaction,
+    _db: Database,
+) -> Result<response_types::InteractionResponse, MagicError> {
     Ok(InteractionResponse::create(
         3,
         Data::content("vote player".to_string()),
     ))
 }
 
-fn leave_lobby(_interaction: request_types::Interaction, _db: Database) -> Result<response_types::InteractionResponse, MagicError> {
+fn leave_lobby(
+    _interaction: request_types::Interaction,
+    _db: Database,
+) -> Result<response_types::InteractionResponse, MagicError> {
     Ok(InteractionResponse::create(
         3,
         Data::content("leave lobby".to_string()),

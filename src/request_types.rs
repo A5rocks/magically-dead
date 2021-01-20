@@ -86,11 +86,15 @@ impl ApplicationCommandData {
     pub fn id(self) -> String {
         self.id
     }
+
+    pub fn options(self) -> Option<Vec<ApplicationCommandDataOption>> {
+        self.options
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
-enum ApplicationCommandDataValue {
+pub enum ApplicationCommandDataValue {
     String(String),
     // it can be higher, but oh well.
     Number(i128),
@@ -99,7 +103,7 @@ enum ApplicationCommandDataValue {
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
-enum ApplicationCommandDataOption {
+pub enum ApplicationCommandDataOption {
     Value {
         name: String,
         value: ApplicationCommandDataValue,
@@ -122,11 +126,16 @@ pub struct GuildMember {
     deaf: bool,
     mute: bool,
     pending: Option<bool>,
+    permissions: String,
 }
 
 impl GuildMember {
     pub fn user(self) -> User {
         self.user
+    }
+
+    pub fn permissions(self) -> String {
+        self.permissions
     }
 }
 
