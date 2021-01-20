@@ -136,11 +136,7 @@ async fn error_handler(req: Request<Body>, db: Database) -> Result<Response<Body
 
 #[tokio::main]
 async fn main() {
-    // let tobogan = sled::open("sled.data").expect("Could not open sled's file.");
-    let tobogan = sled_extensions::Config::default()
-        .path("sled.data")
-        .open()
-        .expect("Could not open sled's file");
+    let tobogan = sled::open("sled.data").expect("was not able to open sled's file");
     let db = Database::make(tobogan);
 
     let make_svc = make_service_fn(move |_| {

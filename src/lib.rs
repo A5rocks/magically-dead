@@ -3,8 +3,8 @@ pub mod response_types;
 
 use response_types::{Data, InteractionResponse};
 use serde::{Deserialize, Serialize};
-use sled_extensions::bincode::Tree;
-use sled_extensions::DbExt;
+use sled::{transaction::ConflictableTransactionResult, Transactional};
+use std::convert::Infallible;
 use std::{error::Error, fmt};
 
 #[derive(Debug)]
@@ -25,17 +25,27 @@ pub struct Lobby {
 
 #[derive(Clone)]
 pub struct Database {
-    // TODO: this
-    lobbies: std::sync::Arc<Tree<Lobby>>,
+    lobbies: sled::Tree,
+    players: sled::Tree,
+}
+
+fn encode_lobby(lobby: &Lobby) -> Vec<u8> {
+    bincode::serialize(lobby).expect("could not serialize lobby?")
+}
+
+fn decode_lobby(lobby: &[u8]) -> Lobby {
+    bincode::deserialize(lobby).expect("bad lobby state.")
 }
 
 impl Database {
-    pub fn make(db: sled_extensions::Db) -> Self {
+    pub fn make(db: sled::Db) -> Self {
         Self {
-            lobbies: std::sync::Arc::from(
-                db.open_bincode_tree("lobbies")
-                    .expect("was not able to open lobby tree"),
-            ),
+            lobbies: db
+                .open_tree("lobbies")
+                .expect("was not able to open lobby tree"),
+            players: db
+                .open_tree("players")
+                .expect("was not able to open player tree"),
         }
     }
 }
@@ -79,8 +89,8 @@ impl From<serde_json::Error> for MagicError {
     }
 }
 
-impl From<sled_extensions::Error> for MagicError {
-    fn from(s: sled_extensions::Error) -> Self {
+impl From<sled::Error> for MagicError {
+    fn from(s: sled::Error) -> Self {
         eprintln!("sled error says: {:?}", s);
         Self::SledError
     }
@@ -90,28 +100,59 @@ pub async fn create_lobby(
     interaction: request_types::Interaction,
     db: Database,
 ) -> Result<response_types::InteractionResponse, MagicError> {
-    db.lobbies
-        .as_ref()
-        .transaction(|db| {
-            let prior_lobby = db.get(interaction.clone().channel_id())?;
-            println!("Prior lobby: {:?}", prior_lobby);
+    let player_id = interaction.clone().member().user().id();
+    let result = (&db.lobbies, &db.players)
+        .transaction(|(lobbies, players)| {
+            let ok = ConflictableTransactionResult::<sled::Result<&'static str>, Infallible>::Ok;
+            let player = players.get(&player_id)?;
+            let lobby_id_val = interaction.clone().channel_id();
+            let lobby_id = lobby_id_val.as_str();
+            let cur_lobby = lobbies
+                .get(lobby_id)?
+                .map(|thing| decode_lobby(thing.as_ref()));
 
-            db.insert(
-                interaction.clone().channel_id().as_str(),
-                Lobby {
-                    creator: interaction.clone().member().user().id(),
-                    players: vec![interaction.clone().member().user().id()],
-                },
-            )?
-            .expect("todo!");
+            // if there's a lobby already...
+            // TODO: make this do some extra work for UX (leaving, etc.)
+            if let Some(_lobby) = cur_lobby {
+                // we do some extra work for error messages.
+                return if let Some(id) = player {
+                    if id == lobby_id {
+                        ok(Ok(
+                            "you're already in that lobby! (`hijack` will be implemented soon:tm:)",
+                        ))
+                    } else {
+                        ok(Ok("you're in another lobby!"))
+                    }
+                } else {
+                    ok(Ok("a lobby already exists in this channel! try /join!"))
+                };
+            };
 
-            Ok(Ok(()))
+            if let Some(_player_lobby_id) = player {
+                // the player is in a lobby
+                // so... are they the owner of their old lobby?
+                // TODO: delete / leave old lobby
+                return ok(Ok("tell a5 to do this."));
+            }
+
+            lobbies.insert(
+                lobby_id,
+                encode_lobby(&Lobby {
+                    creator: player_id.clone(),
+                    players: vec![player_id.clone()],
+                }),
+            )?;
+            players.insert(player_id.as_str(), lobby_id)?;
+
+            ConflictableTransactionResult::<sled::Result<&'static str>, Infallible>::Ok(Ok(
+                "all systems are a go.",
+            ))
         })
         .expect("tx error")?;
 
     Ok(InteractionResponse::create(
         3,
-        Data::content("create lobby".to_string()),
+        Data::content(format!("create lobby: {}", result)),
     ))
 }
 
@@ -134,6 +175,10 @@ pub async fn handle_interaction(
         "796999927782834176" => Ok(InteractionResponse::create(
             3,
             Data::content("vote player".to_string()),
+        )),
+        "801198519263559690" => Ok(InteractionResponse::create(
+            3,
+            Data::content("leave lobby".to_string()),
         )),
         _ => Ok(InteractionResponse::create(
             4,
