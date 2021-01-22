@@ -1,6 +1,7 @@
 #![warn(clippy::pedantic)]
 #![warn(clippy::nursery)]
-#![warn(clippy::cargo)]
+// editors hate this one trick:
+// #![warn(clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
 
 #[macro_use]
@@ -96,22 +97,22 @@ async fn handle_request(
 
             let p: magic::request_types::RawInteraction = serde_json::from_str(body_string)?;
 
-            if p.interaction_type == 1 {
+            return if p.interaction_type == 1 {
                 *resp.body_mut() = serde_json::json!({
                     "type": 1
                 })
                 .to_string()
                 .into();
-                return Ok(resp);
+                Ok(resp)
             } else {
                 let interaction = magic::request_types::Interaction::try_from(p)?;
 
-                return Ok(Response::new(
+                Ok(Response::new(
                     magic::handle_interaction(interaction, db)
                         .await?
                         .try_into()?,
-                ));
-            }
+                ))
+            };
         }
         _ => {
             *resp.status_mut() = StatusCode::NOT_FOUND;

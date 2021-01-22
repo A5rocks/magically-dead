@@ -172,20 +172,14 @@ fn create_lobby(
                 .get(lobby_id)?
                 .map(|thing| decode_lobby(thing.as_ref()));
 
-            dbg!(&cur_lobby);
-
             // if there's a lobby already...
             // TODO: make this do some extra work for UX (leaving, etc.)
-            if player.is_some() && !hijacking {
+            if let Some(id) = player {
                 // we do some extra work for error messages.
-                return if let Some(id) = player {
-                    if id == lobby_id {
-                        Ok(Ok("you're already in that lobby!"))
-                    } else {
-                        Ok(Ok("you're in another lobby!"))
-                    }
+                return if id == lobby_id {
+                    Ok(Ok("you're already in that lobby!"))
                 } else {
-                    Ok(Ok("a lobby already exists in this channel! try /join!"))
+                    Ok(Ok("you're in another lobby!"))
                 };
             };
 
@@ -195,6 +189,10 @@ fn create_lobby(
             } else {
                 hijacking
             };
+
+            if cur_lobby.is_some() && !hijacking {
+                return Ok(Ok("a lobby already exists in this channel! try /join!"));
+            }
 
             if player.is_some() {
                 // the player is in a lobby
@@ -238,12 +236,55 @@ fn create_lobby(
 }
 
 fn join_lobby(
-    _interaction: request_types::Interaction,
-    _db: Database,
+    interaction: request_types::Interaction,
+    db: Database,
 ) -> Result<response_types::InteractionResponse, MagicError> {
+    let player_id_val = interaction.clone().member().user().id();
+    let player_id = player_id_val.as_str();
+    let lobby_id_val = interaction.channel_id();
+    let lobby_id = lobby_id_val.as_str();
+
+    let result = (&db.lobbies, &db.players)
+        .transaction(|(lobbies, players)| {
+            let player = players.get(player_id)?;
+
+            // in a lobby already?
+            if player.is_some() {
+                // TODO: leaving for UX (requires some abstraction)
+                return Ok(Ok("leave your previous lobby first"));
+            }
+
+            let lobby_str = lobbies.get(lobby_id)?;
+
+            // is there not a lobby?
+            if lobby_str.is_none() {
+                // TODO: making a lobby for UX (requires some abstraction)
+                return Ok(Ok("this channel does not have a lobby, make one instead?"));
+            };
+
+            let mut lobby = decode_lobby(&lobby_str.unwrap());
+
+            lobby.players.push(player_id_val.clone());
+
+            lobbies.insert(
+                lobby_id,
+                encode_lobby(&Lobby {
+                    creator: lobby.creator,
+                    players: lobby.players,
+                }),
+            )?;
+
+            players.insert(player_id, lobby_id)?;
+
+            ConflictableTransactionResult::<sled::Result<&'static str>, Infallible>::Ok(Ok(
+                "joined the lobby.",
+            ))
+        })
+        .expect("tx error")?;
+
     Ok(InteractionResponse::create(
         3,
-        Data::content("join lobby".to_string()),
+        Data::content(format!("join lobby: {}", result)),
     ))
 }
 
@@ -268,12 +309,65 @@ fn vote_player(
 }
 
 fn leave_lobby(
-    _interaction: request_types::Interaction,
-    _db: Database,
+    interaction: request_types::Interaction,
+    db: Database,
 ) -> Result<response_types::InteractionResponse, MagicError> {
+    let player_id = interaction.clone().member().user().id();
+    let lobby_id_val = interaction.channel_id();
+    let lobby_id = lobby_id_val.as_str();
+
+    let result = (&db.players, &db.lobbies)
+        .transaction(|(players, lobbies)| {
+            let player = players.get(&player_id)?;
+
+            if player.is_none()
+                || std::str::from_utf8(player.unwrap().as_ref()).unwrap() != lobby_id
+            {
+                return Ok(Ok("you need to be in a lobby to leave it."));
+            };
+
+            players.remove(player_id.as_str())?;
+
+            let lobby_str = lobbies.get(lobby_id)?;
+
+            if lobby_str.is_none() {
+                return Ok(Ok("there was no such lobby???"));
+            };
+
+            let mut lobby = decode_lobby(&lobby_str.unwrap());
+
+            if lobby.creator.as_str() == player_id {
+                // you're the creator
+                for player in lobby.players {
+                    if player != player_id {
+                        players.remove(player.as_str())?;
+                    };
+                }
+
+                lobbies.remove(lobby_id)?;
+
+                Ok(Ok("disbanded the lobby!"))
+            } else {
+                // you're not the creator
+                lobby.players.retain(|n| n == &player_id);
+                lobbies.insert(
+                    lobby_id,
+                    encode_lobby(&Lobby {
+                        creator: lobby.creator,
+                        players: lobby.players,
+                    }),
+                )?;
+
+                ConflictableTransactionResult::<sled::Result<&'static str>, Infallible>::Ok(Ok(
+                    "left the lobby!",
+                ))
+            }
+        })
+        .expect("tx error")?;
+
     Ok(InteractionResponse::create(
         3,
-        Data::content("leave lobby".to_string()),
+        Data::content(format!("leave lobby: {}", result)),
     ))
 }
 
